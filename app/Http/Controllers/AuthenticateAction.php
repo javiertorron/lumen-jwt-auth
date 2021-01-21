@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Actions\IAction;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\User;
 use DateTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
