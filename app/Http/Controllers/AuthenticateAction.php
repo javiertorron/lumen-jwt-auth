@@ -2,30 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Actions\IAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\User;
 use DateTime;
-use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
-class AuthController extends Controller
+class AuthenticateAction implements IAction
 {
     /**
-     * Create a new controller instance.
+     * JWT token generation action. This action has the only
+     * purpose to generate a n authentication token based
+     * on JWT, using the user password hash as a secret
+     * for verifying the token validity.
      *
-     * @return void
+     * @param Request $request Request data
+     *
+     * @return Illuminate\Http\JsonResponse
      */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Check the user credentials and generates JWT token
-     */
-    public function authentication(Request $request): JsonResponse
+    public function response(Request $request): JsonResponse
     {
         if (!$request->input('username')) {
             return response()->json('Unauthorized', 401);
@@ -52,7 +49,11 @@ class AuthController extends Controller
                 "expiration"=>  (new DateTime())->getTimestamp()+(5*24*3600),
                 "publicKey" =>  Str::random()
             ];
-            $data       = $this->base64url_encode(json_encode($jwtHeader)).".".$this->base64url_encode(json_encode($jwtClaims));
+            $data       = $this->base64url_encode(
+                json_encode($jwtHeader)
+            ).".".$this->base64url_encode(
+                json_encode($jwtClaims)
+            );
             $hashedData = HASH_HMAC("sha256", $data, $encriptionSecret);
             $signature  = $this->base64url_encode($hashedData);
             return response()->json(['token' => "$data.$signature"]);
@@ -62,6 +63,7 @@ class AuthController extends Controller
     }
 
     // Helper private functions
+    // ------------------------------------------------------------------------------------------------------
     private function base64url_encode($data)
     {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');

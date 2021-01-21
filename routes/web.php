@@ -15,7 +15,7 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->post('/authentication', [
+$router->post('/authenticate', [
     'as'    =>  'authentication',
-    'uses'  =>  'AuthController@authentication'
+    'uses'  =>  'AuthenticateAction@response'
 ]);
