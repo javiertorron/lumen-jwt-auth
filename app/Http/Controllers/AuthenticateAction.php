@@ -25,40 +25,44 @@ class AuthenticateAction implements IAction
     public function response(Request $request): JsonResponse
     {
         if (!$request->input('username')) {
-            return response()->json('Unauthorized', 401);
+            return response()->json(["code" => 400, "message" => 'Malformed request'], 400);
         }
 
         $user = User::where('username', $request->input('username'))->first();
         if (!$user) {
-            return response()->json('Unauthorized', 401);
+            return response()->json(["code" => 401, "message" => 'Unauthorized'], 401);
         }
 
         if (Hash::check($request->input('password'), $user->hash)) {
-            $encriptionSecret = app('hash')->make($request->input('password'));
-            $now = (new DateTime())->getTimestamp();
-            $jwtHeader = [
+            $encriptionSecret = env("JWT_PRIVATE_KEY");
+            $daysToExpire = env("JWT_DAYS_TO_EXPIRE");
+            $daysToRefresh = env("JWT_DAYS_TO_REFRESH");
+            $now              = (new DateTime())->getTimestamp();
+            $jwtHeader        = [
                 "iat"   =>  $now,
                 "nbf"   =>  $now,
                 "exp"   =>  23,
                 "typ"   =>  "JWT",
                 "alg"   =>  "HS256"
             ];
-            $jwtClaims = [
-                "userId"    =>  $user->id,
-                "username"  =>  $user->username,
-                "expiration"=>  (new DateTime())->getTimestamp()+(5*24*3600),
-                "publicKey" =>  Str::random()
+            $jwtClaims       = [
+                "userId"        => $user->id,
+                "username"      => $user->username,
+                "serialization" => serialize($user),
+                "expiration"    => strtotime(date("Y-m-d H:i:s", strtotime(`+$daysToExpire days`))),
+                "refresh"       => strtotime(date("Y-m-d H:i:s", strtotime(`+$daysToRefresh days`)))
             ];
-            $data       = $this->base64url_encode(
+            $data             = $this->base64url_encode(
                 json_encode($jwtHeader)
             ).".".$this->base64url_encode(
                 json_encode($jwtClaims)
             );
-            $hashedData = HASH_HMAC("sha256", $data, $encriptionSecret);
-            $signature  = $this->base64url_encode($hashedData);
+            $hashedData       = HASH_HMAC("sha256", $data, $encriptionSecret);
+            $signature        = $this->base64url_encode($hashedData);
+
             return response()->json(['token' => "$data.$signature"]);
         } else {
-            return response()->json('Unauthorized', 401);
+            return response()->json(["code" => 401, "message" => 'Unauthorized'], 401);
         }
     }
 

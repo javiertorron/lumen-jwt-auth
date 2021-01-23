@@ -1,6 +1,4 @@
 # JWT Authentication
-
-## Descripción
 Este microservicio se encarga del sistema de autenticación de servicios mediante un token JWT. Su propósito no es otro que, dado un usuario y contraseña válidos, genera un Token JWT que contiene los datos básicos del usuario, tales como su username y su id, de forma que cualquier servicio al que se le envíe este token no necesitará cargar estos datos, ahorrando tiempos de carga en todos ellos.
 
 El token JWT se encriptará con la clave de encriptación del sistema, que tienen almacenados todos los servicios
@@ -21,5 +19,4 @@ refresh       - Timestamp con la fecha final de refresco, a prtir de la cual el 
 - Ejecutar en terminal `.\serve.bat` (para Windows) o bien `./serve.sh` (para UNIX)
 
 ## TODO:
-- Petición de validación de tokens
 - Token refresh
