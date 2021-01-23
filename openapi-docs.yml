@@ -1,0 +1,70 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: JWT Authentication
+servers:
+  - url: 'http://localhost:8082/v1'
+    description: 'Development Server'
+paths:
+  /authenticate:
+    post:
+      summary: 'Get JWT token for an user'
+      requestBody:
+          description: 'Data for user authentication, username and hashed password'
+          required: true
+          content:
+            application/json:
+                schema:
+                    $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: 'Generated JWT Token'
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtToken'
+        '301':
+            description: 'Unauthorized'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        tag:
+          type: string
+    JwtToken:
+        type: object
+        required:
+            - token
+        properties:
+            token:
+                type: string
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
